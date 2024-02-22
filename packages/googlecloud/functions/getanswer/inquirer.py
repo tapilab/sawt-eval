@@ -234,7 +234,8 @@ def process_and_concat_documents(retrieved_docs):
     return combined_content, original_documents
 
 
-def get_indepth_response_from_query(df, db_fc, db_cj, db_pdf, db_pc, db_news, query, k):
+def get_indepth_response_from_query(df, db_fc, db_cj, db_pdf, db_pc, db_news, query, k, return_context):
+
     logger.info("Performing in-depth summary query...")
 
     llm = ChatOpenAI(model_name="gpt-3.5-turbo-1106", streaming=True)
@@ -329,6 +330,10 @@ def get_indepth_response_from_query(df, db_fc, db_cj, db_pdf, db_pc, db_news, qu
     if remaining_text:
         final_result["responses"].append({"response": remaining_text})
 
+    if return_context:
+        # docs retrieved here
+        return (final_result, combined_docs_content)
+
     return final_result
 
 
@@ -358,10 +363,11 @@ def get_general_summary_response_from_query(db, query, k):
     return card_json
 
 
-def route_question(df, db_fc, db_cj, db_pdf, db_pc, db_news, query, query_type, k=20):
+def route_question(df, db_fc, db_cj, db_pdf, db_pc, db_news, query, query_type, k=20, return_context=False):
+
     if query_type == RESPONSE_TYPE_DEPTH:
         return get_indepth_response_from_query(
-            df, db_fc, db_cj, db_pdf, db_pc, db_news, query, k
+            df, db_fc, db_cj, db_pdf, db_pc, db_news, query, k, return_context
         )
     else:
         raise ValueError(
